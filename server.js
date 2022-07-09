@@ -10,16 +10,38 @@ const connectionString =
 MongoClient.connect(connectionString)
   .then((client) => {
     console.log("Connected to Database");
+    const db = client.db("star-wars-quotes");
+    const quotesCollection = db.collection("quotes");
+
+    app.set("view engine", "ejs");
+    app.use(bodyParser.json());
+
+    app.post("/quotes", (req, res) => {
+      quotesCollection
+        .insertOne(req.body)
+        .then((result) => {
+          console.log("Data inserted Successfuly !");
+          res.redirect("/");
+        })
+        .catch((err) => console.error(err));
+    });
+
+    app.get("/", (req, res) => {
+      db.collection("quotes")
+        .find()
+        .toArray()
+        .then((result) => {
+          res.render("index.ejs", { quotes: result });
+        })
+        .catch((err) => console.error(err));
+    });
+
+    app.put("/quotes", (req, res) => {
+      console.log(req.body);
+    });
   })
   .catch((error) => console.error(error));
 
-app.get("/", (req, res) => {
-  res.sendFile(__dirname + "/index.html");
-});
-
-app.post("/quotes", (req, res) => {
-  console.log(req.body);
-});
 app.listen(3000, () => {
   console.log("listening on 3000");
 });
