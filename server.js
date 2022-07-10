@@ -7,6 +7,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 const connectionString =
   "mongodb+srv://gowsi03:gowsi2001@cluster0.steffn5.mongodb.net/?retryWrites=true&w=majority";
+
 MongoClient.connect(connectionString)
   .then((client) => {
     console.log("Connected to Database");
@@ -14,6 +15,7 @@ MongoClient.connect(connectionString)
     const quotesCollection = db.collection("quotes");
 
     app.set("view engine", "ejs");
+    app.use(express.static("public"));
     app.use(bodyParser.json());
 
     app.post("/quotes", (req, res) => {
@@ -32,16 +34,48 @@ MongoClient.connect(connectionString)
         .toArray()
         .then((result) => {
           res.render("index.ejs", { quotes: result });
+          //console.log(result);
         })
         .catch((err) => console.error(err));
     });
 
     app.put("/quotes", (req, res) => {
-      console.log(req.body);
+      quotesCollection
+        .findOneAndUpdate(
+          {
+            name: "Yoda",
+          },
+          {
+            $set: {
+              name: req.body.name,
+              quote: req.body.quote,
+            },
+          },
+          {
+            upsert: true,
+          }
+        )
+        .then((result) => {
+          res.json("Success!");
+        })
+        .catch((err) => console.error(err));
+      //console.log(req.body);
+    });
+
+    app.delete("/quotes", (req, res) => {
+      quotesCollection
+        .deleteOne({ name: req.body.name })
+        .then((result) => {
+          if (result.deletedCount === 0) {
+            return res.json("No quote to delete");
+          }
+          res.json("Deleted Darth Vadar's quote");
+        })
+        .catch((err) => console.error(err));
+    });
+
+    app.listen(3000, () => {
+      console.log("listening on 3000");
     });
   })
   .catch((error) => console.error(error));
-
-app.listen(3000, () => {
-  console.log("listening on 3000");
-});

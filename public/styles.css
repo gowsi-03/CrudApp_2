@@ -59,3 +59,8 @@ h1,
 h2 {
   margin: 0;
 }
+
+#message {
+  font-weight: 200;
+  font-size: 15px;
+}
